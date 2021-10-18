@@ -1,4 +1,4 @@
-package main
+package mgo
 
 /**
 官方原版API ， 主要为使用mongoDB的事务

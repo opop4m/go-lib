@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 
 	"github.com/opop4m/go-lib/log"
+	"github.com/opop4m/go-lib/mgo"
 )
 
 func main() {
@@ -21,8 +22,8 @@ func main() {
 
 	uri := "mongodb://root:Ibdj782__@127.0.0.1:27017/remind?authSource=admin"
 	dbName := "remind"
-	InitMongoDB(uri, dbName)
-	c := GetMongoDB().C("user")
+	mgo.InitMongoDB(uri, dbName)
+	c := mgo.GetMongoDB().C("user")
 	var results []map[string]interface{}
 	c.Find(nil).All(&results)
 	log.Info("res: %v", results)
