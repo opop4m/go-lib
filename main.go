@@ -16,7 +16,7 @@ func main() {
 
 	log.InitLog(conf.Debug, "pid", conf.Dir, confMap)
 
-	log.Info("test")
+	log.Info("test 11")
 	log.Info("test %v", conf)
 	// select {}
 }
