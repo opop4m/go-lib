@@ -3,7 +3,7 @@ package main
 import (
 	"encoding/json"
 
-	"github.com/opop4m/go-log/log"
+	"github.com/opop4m/go-lib/log"
 )
 
 func main() {

@@ -19,7 +19,7 @@ import (
 	"encoding/json"
 	"fmt"
 
-	logs "github.com/opop4m/go-log/log/beego"
+	logs "github.com/opop4m/go-lib/log/beego"
 )
 
 //NewBeegoLogger beego

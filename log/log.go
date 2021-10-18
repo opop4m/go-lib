@@ -16,7 +16,7 @@
 package log
 
 import (
-	beegolog "github.com/opop4m/go-log/log/beego"
+	beegolog "github.com/opop4m/go-lib/log/beego"
 )
 
 var beego *beegolog.BeeLogger
