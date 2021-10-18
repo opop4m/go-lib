@@ -1,0 +1,10 @@
+/.idea/
+vendor/
+bin/conf/config.yaml
+__debug_bin
+bin/logs
+bin/bi
+test/*
+test*
+build/*
+.DS_Store
