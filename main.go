@@ -18,5 +18,14 @@ func main() {
 
 	log.Info("test 111")
 	log.Info("test %v", conf)
+
+	uri := "mongodb://root:Ibdj782__@127.0.0.1:27017/remind?authSource=admin"
+	dbName := "remind"
+	InitMongoDB(uri, dbName)
+	c := GetMongoDB().C("user")
+	var results []map[string]interface{}
+	c.Find(nil).All(&results)
+	log.Info("res: %v", results)
+
 	// select {}
 }
