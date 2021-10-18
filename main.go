@@ -2,9 +2,15 @@ package main
 
 import (
 	"encoding/json"
+	"os"
+	"time"
+
+	slog "log"
 
 	"github.com/opop4m/go-lib/log"
 	"github.com/opop4m/go-lib/mgo"
+	"github.com/opop4m/go-lib/myLog"
+	l "gorm.io/gorm/logger"
 )
 
 func main() {
@@ -28,5 +34,13 @@ func main() {
 	c.Find(nil).All(&results)
 	log.Info("res: %v", results)
 
+	myLog.New(
+		slog.New(os.Stdout, "\r\n", slog.LstdFlags), // io writer
+		myLog.Config{
+			SlowThreshold: time.Second / 2, // Slow SQL threshold
+			LogLevel:      l.Error,         // Log level
+			Colorful:      true,            // Disable color
+		},
+	)
 	// select {}
 }
