@@ -9,7 +9,7 @@ import (
 
 	"github.com/opop4m/go-lib/log"
 	"github.com/opop4m/go-lib/mgo"
-	"github.com/opop4m/go-lib/myLog"
+	"github.com/opop4m/go-lib/mysqltool"
 	l "gorm.io/gorm/logger"
 )
 
@@ -34,9 +34,9 @@ func main() {
 	c.Find(nil).All(&results)
 	log.Info("res: %v", results)
 
-	myLog.New(
+	mysqltool.New(
 		slog.New(os.Stdout, "\r\n", slog.LstdFlags), // io writer
-		myLog.Config{
+		mysqltool.Config{
 			SlowThreshold: time.Second / 2, // Slow SQL threshold
 			LogLevel:      l.Error,         // Log level
 			Colorful:      true,            // Disable color
