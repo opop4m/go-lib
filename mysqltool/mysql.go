@@ -9,7 +9,6 @@ import (
 	"github.com/opop4m/go-lib/log"
 
 	"github.com/panjf2000/ants/v2"
-	"github.com/yireyun/go-queue"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	l "gorm.io/gorm/logger"
@@ -17,7 +16,6 @@ import (
 
 var mysqlDB *gorm.DB
 var onceMysql sync.Once
-var queueFunc *queue.EsQueue
 
 type QueueFuc func()
 
