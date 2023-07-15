@@ -14,10 +14,10 @@ import (
 	"time"
 
 	"github.com/opop4m/go-lib/log"
-	"github.com/opop4m/go-lib/mongo-driver/bson"
-	"github.com/opop4m/go-lib/mongo-driver/mongo"
-	"github.com/opop4m/go-lib/mongo-driver/mongo/options"
-	"github.com/opop4m/go-lib/mongo-driver/mongo/readpref"
+	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
+	"go.mongodb.org/mongo-driver/mongo/readpref"
 
 	"github.com/fatih/structs"
 )

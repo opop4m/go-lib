@@ -9,7 +9,7 @@ import (
 
 	"github.com/opop4m/go-lib/log"
 	"github.com/opop4m/go-lib/mgo"
-	"github.com/opop4m/go-lib/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson"
 )
 
 func BenchmarkMgo(b *testing.B) {
