@@ -17,9 +17,8 @@ import (
 	"fmt"
 
 	"github.com/opop4m/go-lib/mongo-driver/x/bsonx/bsoncore"
-
-	"github.com/xdg/scram"
-	"github.com/xdg/stringprep"
+	"github.com/xdg-go/scram"
+	"github.com/xdg-go/stringprep"
 )
 
 const (

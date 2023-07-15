@@ -10,17 +10,13 @@
 package primitive
 
 import (
-	"bytes"
-	"context"
 	"crypto/rand"
-	"database/sql/driver"
+	"encoding"
 	"encoding/binary"
 	"encoding/hex"
 	"encoding/json"
 	"errors"
 	"fmt"
-	"gorm.io/gorm"
-	"gorm.io/gorm/clause"
 	"io"
 	"sync/atomic"
 	"time"
@@ -31,29 +27,15 @@ var ErrInvalidHex = errors.New("the provided hex string is not a valid ObjectID"
 
 // ObjectID is the BSON ObjectID type.
 type ObjectID [12]byte
-func (s ObjectID) GormValue(ctx context.Context, db *gorm.DB) clause.Expr {
-	return clause.Expr{
-		SQL:  "?",
-		Vars: []interface{}{s.Hex()},
-	}
-}
-func (s *ObjectID) Scan(value interface{}) error {
-	byte, ok := value.([]byte)
-	if !ok {
-		return errors.New(fmt.Sprint("Failed to unmarshal oid value:", value))
-	}
-	var err error
-	*s,err = ObjectIDFromHex(string(byte))
-	return err
-}
-func (j ObjectID) Value() (driver.Value, error) {
-	return j.Hex(),nil
-}
+
 // NilObjectID is the zero value for ObjectID.
 var NilObjectID ObjectID
 
 var objectIDCounter = readRandomUint32()
 var processUnique = processUniqueBytes()
+
+var _ encoding.TextMarshaler = ObjectID{}
+var _ encoding.TextUnmarshaler = &ObjectID{}
 
 // NewObjectID generates a new ObjectID.
 func NewObjectID() ObjectID {
@@ -79,7 +61,9 @@ func (id ObjectID) Timestamp() time.Time {
 
 // Hex returns the hex encoding of the ObjectID as a string.
 func (id ObjectID) Hex() string {
-	return hex.EncodeToString(id[:])
+	var buf [24]byte
+	hex.Encode(buf[:], id[:])
+	return string(buf[:])
 }
 
 func (id ObjectID) String() string {
@@ -88,25 +72,48 @@ func (id ObjectID) String() string {
 
 // IsZero returns true if id is the empty ObjectID.
 func (id ObjectID) IsZero() bool {
-	return bytes.Equal(id[:], NilObjectID[:])
+	return id == NilObjectID
 }
 
 // ObjectIDFromHex creates a new ObjectID from a hex string. It returns an error if the hex string is not a
 // valid ObjectID.
 func ObjectIDFromHex(s string) (ObjectID, error) {
-	b, err := hex.DecodeString(s)
-	if err != nil {
-		return NilObjectID, err
-	}
-
-	if len(b) != 12 {
+	if len(s) != 24 {
 		return NilObjectID, ErrInvalidHex
 	}
 
 	var oid [12]byte
-	copy(oid[:], b[:])
+	_, err := hex.Decode(oid[:], []byte(s))
+	if err != nil {
+		return NilObjectID, err
+	}
 
 	return oid, nil
+}
+
+// IsValidObjectID returns true if the provided hex string represents a valid ObjectID and false if not.
+//
+// Deprecated: Use ObjectIDFromHex and check the error instead.
+func IsValidObjectID(s string) bool {
+	_, err := ObjectIDFromHex(s)
+	return err == nil
+}
+
+// MarshalText returns the ObjectID as UTF-8-encoded text. Implementing this allows us to use ObjectID
+// as a map key when marshalling JSON. See https://pkg.go.dev/encoding#TextMarshaler
+func (id ObjectID) MarshalText() ([]byte, error) {
+	return []byte(id.Hex()), nil
+}
+
+// UnmarshalText populates the byte slice with the ObjectID. Implementing this allows us to use ObjectID
+// as a map key when unmarshalling JSON. See https://pkg.go.dev/encoding#TextUnmarshaler
+func (id *ObjectID) UnmarshalText(b []byte) error {
+	oid, err := ObjectIDFromHex(string(b))
+	if err != nil {
+		return err
+	}
+	*id = oid
+	return nil
 }
 
 // MarshalJSON returns the ObjectID as a string

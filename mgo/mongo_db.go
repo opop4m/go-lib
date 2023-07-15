@@ -13,13 +13,11 @@ import (
 	"sync"
 	"time"
 
+	"github.com/opop4m/go-lib/log"
 	"github.com/opop4m/go-lib/mongo-driver/bson"
 	"github.com/opop4m/go-lib/mongo-driver/mongo"
 	"github.com/opop4m/go-lib/mongo-driver/mongo/options"
 	"github.com/opop4m/go-lib/mongo-driver/mongo/readpref"
-	"github.com/opop4m/go-lib/mongo-driver/x/bsonx"
-
-	"github.com/opop4m/go-lib/log"
 
 	"github.com/fatih/structs"
 )
@@ -30,26 +28,26 @@ type mongoDb struct {
 
 var onceMongoApi sync.Once
 var mongoDatabase *mongoDb
-var uri string
+
+var mongoUri string
+var mongoDbName string
 
 func InitMongoDB(uri, dbName string) {
 	log.Info(uri)
+	mongoUri = uri
+	mongoDbName = dbName
 	onceMongoApi.Do(func() {
 		op := options.Client().ApplyURI(uri).
 			SetMinPoolSize(20).SetMaxPoolSize(40000)
-		client, err := mongo.NewClient(
-			op,
-		)
+		ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
+		client, err := mongo.Connect(ctx, op)
+
 		if err != nil {
 			log.Error("myMongo db connect error")
 			os.Exit(1)
 		}
 		mongoDatabase = &mongoDb{
 			*client.Database(dbName),
-		}
-		ctx, _ := context.WithTimeout(context.Background(), 3*time.Second)
-		if err := mongoDatabase.Client().Connect(ctx); err != nil {
-			log.Error(err.Error())
 		}
 	})
 }
@@ -113,6 +111,8 @@ func (d *DBTransaction) Exec(mongoClient *mongo.Client, operator func(mongo.Sess
 type Collect struct {
 	*mongo.Collection
 }
+
+// func()
 
 func (s *mongoDb) C(collectionName string) *Collect {
 	c := s.Collection(collectionName)
@@ -250,7 +250,7 @@ func (s *Collect) Pipe(pipe mongo.Pipeline) *Query {
 	}
 }
 
-func (s *Collect) CreateIndex(keys bsonx.Doc, option *options.IndexOptions) error {
+func (s *Collect) CreateIndex(keys bson.D, option *options.IndexOptions) error {
 	//defer s.Database().Client().Disconnect(nil)
 	indexModel := mongo.IndexModel{
 		//Keys: bsonx.Doc{{"expire_date", bsonx.Int32(1)}}, // 设置TTL索引列"expire_date"
@@ -324,10 +324,19 @@ func (s *Query) One(result interface{}) error {
 			findOptions.Sort = bson.D{{Key: s.sort, Value: 1}}
 		}
 	}
-	return s.c.FindOne(nil, s.find, findOptions).Decode(result)
+	return s.c.FindOne(context.Background(), s.find, findOptions).Decode(result)
 }
+
+//	func (s *Query) All2(result interface{}) error {
+//		if err := s.c.Database().Client().Connect(context.Background()); err != nil {
+//			log.Error(err.Error())
+//			return err
+//		}
+//		defer s.c.Database().Client().Disconnect(context.Background())
+//		return s.All(result)
+//	}
 func (s *Query) All(result interface{}) error {
-	//defer s.c.Database().Client().Disconnect(nil)
+	// defer s.c.Database().Client().Disconnect(context.Background())
 	resultv := reflect.ValueOf(result)
 	if resultv.Kind() != reflect.Ptr || resultv.Elem().Kind() != reflect.Slice {
 		panic("result argument must be a slice address")
